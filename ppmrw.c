@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int argCheck(char *argv[]);
+int argCheck(char *argv[], FILE* in);
 void readP3(FILE* in);
 void readP6(FILE* in);
 
@@ -15,16 +15,21 @@ int main(int argc, char *argv[]) {
 		return(1);
 	} else{
 
-		// This calls a funcion hat will check each
+		// Opens the given ppm file from argv
+		// then calls a funcion that will check each
 		// argument and ensure they are formatted correctly
 		
-		if (argCheck(argv)) {return(1);}
-
 		FILE* in = fopen(argv[2], "r");
+		if (argCheck(argv, in)) {return(1);}
 
-		if (atoi(argv[1]) == 3) {readP3(in);}
+		// Opens the ppm file and then check the header
+		// to decide which function to call
 
-		if (atoi(argv[1]) == 6) {readP6(in);}
+		int check = fgetc(in);
+
+		if (check == '3') {readP3(in);}
+
+		if (check == '3') {readP6(in);}
 
 		fclose(in);
 		printf("Testing...\n");
@@ -32,7 +37,7 @@ int main(int argc, char *argv[]) {
 	}
 }
 
-int argCheck(char *argv[]) {
+int argCheck(char *argv[], FILE* in) {
 
 	// The first check is to ensure that ppm 3 or 6 is selected
 
@@ -44,14 +49,14 @@ int argCheck(char *argv[]) {
 
 	// The second check is ensuring the input and
 	// output files are .ppm
-	/*
-	FILE* in = fopen(argv[2], "r");
+
 	int c = fgetc(in);
-	if (c != 'p') {
+	if (c != 'P') {
 		fprintf(stderr, "Error, this is not a ppm file.\n");
+		printf("%d %d %d\n", c, 'p', 'P');
 		return 1;
 	}
-	*/
+	
 	return 0;
 }
 
