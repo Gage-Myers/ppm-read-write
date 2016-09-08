@@ -2,6 +2,8 @@
 #include <stdlib.h>
 
 int argCheck(char *argv[]);
+void readP3(FILE* in);
+void readP6(FILE* in);
 
 int main(int argc, char *argv[]) {
 
@@ -19,17 +21,12 @@ int main(int argc, char *argv[]) {
 		if (argCheck(argv)) {return(1);}
 
 		FILE* in = fopen(argv[2], "r");
-		FILE* out = fopen(argv[3], "w");
-/*
-		while (fgetc(in) != "EOF" ) {
-			// TODO: read in line by line
-			// buffer in a struct and
-			// then use buffer to write to
-			// out.ppm
-		}
-*/
+
+		if (atoi(argv[1]) == 3) {readP3(in);}
+
+		if (atoi(argv[1]) == 6) {readP6(in);}
+
 		fclose(in);
-		fclose(out);
 		printf("Testing...\n");
 		return 0;
 	}
@@ -56,4 +53,14 @@ int argCheck(char *argv[]) {
 	}
 	*/
 	return 0;
+}
+
+void readP3(FILE* in) {
+	FILE* buff = fopen("buffer.ppm", "w");
+	fclose(buff);
+}
+
+void readP6(FILE* in) {
+	FILE* buff  = fopen("buffer.ppm", "w");
+	fclose(buff);
 }
