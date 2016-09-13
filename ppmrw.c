@@ -2,8 +2,14 @@
 #include <stdlib.h>
 
 int argCheck(char *argv[], FILE* in);
-void readP3(FILE* in);
-void readP6(FILE* in);
+void buff(FILE* in);
+int getSize(FILE* input);
+
+typedef	struct Pixel {
+	unsigned char pixVal;
+} Pixel;
+
+Pixel *imgBuff;
 
 int main(int argc, char *argv[]) {
 
@@ -21,21 +27,18 @@ int main(int argc, char *argv[]) {
 		
 		FILE* in = fopen(argv[2], "r");
 		if (argCheck(argv, in)) {return(1);}
-
-		// Opens the ppm file and then check the header
-		// to decide which function to call
-
-		int check = fgetc(in);
-
-		if (check == '3') {readP3(in);}
-
-		if (check == '3') {readP6(in);}
-
+		
+		buff(in);
 		fclose(in);
+
 		printf("Testing...\n");
 		return 0;
 	}
 }
+
+/* This function checks the arguments given
+ * in the command line to ensure they are
+ * compatible with the program */
 
 int argCheck(char *argv[], FILE* in) {
 
@@ -43,7 +46,6 @@ int argCheck(char *argv[], FILE* in) {
 
 	if (!(atoi(argv[1]) == 3 || atoi(argv[1]) == 6)) {
 		printf("First argument must be 3 or 6\n");
-		printf("%d\n", atoi(argv[1]));
 		return 1;
 	}
 
@@ -53,19 +55,41 @@ int argCheck(char *argv[], FILE* in) {
 	int c = fgetc(in);
 	if (c != 'P') {
 		fprintf(stderr, "Error, this is not a ppm file.\n");
-		printf("%d %d %d\n", c, 'p', 'P');
 		return 1;
 	}
 	
 	return 0;
 }
 
-void readP3(FILE* in) {
-	FILE* buff = fopen("buffer.ppm", "w");
-	fclose(buff);
+/* This function is used to read from the input
+ * ppm file and stores it into a buffer file 
+ * that will later be used to convert into the output
+ * file */
+
+void buff(FILE* in) {
+	int ch, count;
+	count = 0;
+
+	imgBuff = malloc(sizeof(Pixel) * getSize(in));
+
+	while ((ch = fgetc(in))!= EOF) {
+		imgBuff[count].pixVal = (char) ch;
+		count++;
+	}
 }
 
-void readP6(FILE* in) {
-	FILE* buff  = fopen("buffer.ppm", "w");
-	fclose(buff);
+int getSize(FILE* input) {
+	if(input == NULL) return -1;
+
+    long pos = ftell(input);
+
+	if(fseek(input, 0, SEEK_END) == -1) return -1;
+	
+	long size = ftell(input);
+	
+	if(size == -1) return -1;
+	
+	if(fseek(input, pos, SEEK_SET) == -1) return -1;
+
+	return size;
 }
