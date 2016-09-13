@@ -67,14 +67,28 @@ int argCheck(char *argv[], FILE* in) {
  * file */
 
 void buff(FILE* in) {
-	int ch, count;
-	count = 0;
 
-	imgBuff = malloc(sizeof(Pixel) * getSize(in));
+	char type;
 
-	while ((ch = fgetc(in))!= EOF) {
-		imgBuff[count].pixVal = (char) ch;
-		count++;
+	if ((type = fgetc(in)) == '6') {
+
+		int ch, count;
+		count = 0;
+
+		imgBuff = malloc(sizeof(Pixel) * getSize(in));
+
+		while ((ch = fgetc(in))!= EOF) {
+			imgBuff[count].pixVal = (char) ch;
+			count++;
+		}
+	}
+
+	else if (type == '3') {
+	}
+	
+	else {
+		printf("%c\n", type);
+		fprintf(stderr, "This file is improperly formatted\n");
 	}
 }
 
