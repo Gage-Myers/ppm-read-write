@@ -4,7 +4,7 @@
 
 int argCheck(char *argv[], FILE* in);
 void buff(FILE* in, char type);
-void write(FILE* out, char outType, int inType);
+void write(FILE* out, char outType, int size);
 int getSize(FILE* input);
 char headCheck(FILE* input);
 
@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
 		// argument and ensure they are formatted correctly
 		
 		FILE* in = fopen(argv[2], "r");
+		int size = getSize(in);
 		if (argCheck(argv, in)) {return(1);}
 
 		char type = headCheck(in);
@@ -37,15 +38,9 @@ int main(int argc, char *argv[]) {
 		buff(in, type);
 		fclose(in);
 
-		FILE* out;
+		FILE* out = fopen(argv[3], "w");
 
-		if (atoi(argv[1]) == 6) {
-			out = fopen(argv[3], "wb");
-		} else {
-			out = fopen(argv[3], "w");
-		}
-
-		write(out, type, atoi(argv[1]));
+		write(out, type, size);
 		fclose(out);
 
 		printf("Testing...\n");
@@ -125,13 +120,17 @@ int getSize(FILE* input) {
 }
 
 char headCheck(FILE* input) {
-	char type, plc;
+
+	int count = 0;
+	char type;
 	type = (char) fgetc(input);
 	char check[3];
 	fgetc(input);
+
 	while(((char)fgetc(input)) == '#') {
 		while(((char)fgetc(input)) != '\n') {}
 	}
+
 	while(((char)fgetc(input)) != '\n') {}
 
 	for (int i = 0; i < 4;i++) {
@@ -146,13 +145,17 @@ char headCheck(FILE* input) {
 	return type;
 }
 
-void write(FILE* out, char outType, int inType) {
+void write(FILE* out, char outType, int size) {
 
 	if (outType == '6') {
-		if (inType == 6) {
-		} else {
-		}
+		fprintf(out, "P6\n63 63\n255\n");
+		
+		fwrite(pixBuff.data, sizeof(unsigned char), size, out);
+	
 	} else {
+		fprintf(out, "P3\n63 63\n255\n");
+		
+		fprintf(out, "%s", pixBuff.data);
 	}
 	
 }
