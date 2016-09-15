@@ -4,19 +4,15 @@
 
 int argCheck(char *argv[], FILE* in);
 void buff(FILE* in, char type);
+void write(FILE* out, char outType, int inType);
 int getSize(FILE* input);
 char headCheck(FILE* input);
 
-typedef	struct PixelT {
-	int r,g,b;
-} PixelT;
+typedef	struct Pixel {
+	unsigned char data[9000];
+} Pixel;
 
-typedef	struct PixelS {
-	char pixel[9000];
-} PixelS;
-
-PixelS binBuff;
-PixelT *intBuff;
+Pixel pixBuff;
 
 int main(int argc, char *argv[]) {
 
@@ -40,6 +36,17 @@ int main(int argc, char *argv[]) {
 		
 		buff(in, type);
 		fclose(in);
+
+		FILE* out;
+
+		if (atoi(argv[1]) == 6) {
+			out = fopen(argv[3], "wb");
+		} else {
+			out = fopen(argv[3], "w");
+		}
+
+		write(out, type, atoi(argv[1]));
+		fclose(out);
 
 		printf("Testing...\n");
 		return 0;
@@ -78,15 +85,17 @@ int argCheck(char *argv[], FILE* in) {
 
 void buff(FILE* in, char type) {
 
-	if (type == '6') {
+	int size = getSize(in);
 
-		int ch, count;
-		count = 0;
-		fread(binBuff.pixel, sizeof(char),getSize(in),in);
+	if (type == '6') {
+		fread(pixBuff.data, sizeof(char),getSize(in),in);
 	}
 
 	else if (type == '3') {
-		
+		int i;
+		for (i = 0; i < size; i++) {
+			pixBuff.data[i] = fgetc(in);
+		}
 	}
 
 	else {
@@ -94,6 +103,10 @@ void buff(FILE* in, char type) {
 	}
 	
 }
+
+/* This function is a helper function
+ * that is used to read in the size
+ * of the file */
 
 int getSize(FILE* input) {
 	if(input == NULL) return -1;
@@ -116,7 +129,9 @@ char headCheck(FILE* input) {
 	type = (char) fgetc(input);
 	char check[3];
 	fgetc(input);
-	fgetc(input);
+	while(((char)fgetc(input)) == '#') {
+		while(((char)fgetc(input)) != '\n') {}
+	}
 	while(((char)fgetc(input)) != '\n') {}
 
 	for (int i = 0; i < 4;i++) {
@@ -129,4 +144,15 @@ char headCheck(FILE* input) {
 	}
 
 	return type;
+}
+
+void write(FILE* out, char outType, int inType) {
+
+	if (outType == '6') {
+		if (inType == 6) {
+		} else {
+		}
+	} else {
+	}
+	
 }
