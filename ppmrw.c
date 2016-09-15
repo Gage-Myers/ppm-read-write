@@ -1,15 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int argCheck(char *argv[], FILE* in);
-void buff(FILE* in);
+void buff(FILE* in, char type);
 int getSize(FILE* input);
+char headCheck(FILE* input);
 
-typedef	struct Pixel {
-	unsigned char pixVal;
-} Pixel;
+typedef	struct PixelT {
+	int r,g,b;
+} PixelT;
 
-Pixel *imgBuff;
+typedef	struct PixelS {
+	char pixel[9000];
+} PixelS;
+
+PixelS binBuff;
+PixelT *intBuff;
 
 int main(int argc, char *argv[]) {
 
@@ -27,8 +34,11 @@ int main(int argc, char *argv[]) {
 		
 		FILE* in = fopen(argv[2], "r");
 		if (argCheck(argv, in)) {return(1);}
+
+		char type = headCheck(in);
+		if (type == 'n') {return(1);}
 		
-		buff(in);
+		buff(in, type);
 		fclose(in);
 
 		printf("Testing...\n");
@@ -66,30 +76,23 @@ int argCheck(char *argv[], FILE* in) {
  * that will later be used to convert into the output
  * file */
 
-void buff(FILE* in) {
+void buff(FILE* in, char type) {
 
-	char type;
-
-	if ((type = fgetc(in)) == '6') {
+	if (type == '6') {
 
 		int ch, count;
 		count = 0;
-
-		imgBuff = malloc(sizeof(Pixel) * getSize(in));
-
-		while ((ch = fgetc(in))!= EOF) {
-			imgBuff[count].pixVal = (char) ch;
-			count++;
-		}
+		fread(binBuff.pixel, sizeof(char),getSize(in),in);
 	}
 
 	else if (type == '3') {
+		
+	}
+
+	else {
+		fprintf(stderr, "This is not a valid header file\n");
 	}
 	
-	else {
-		printf("%c\n", type);
-		fprintf(stderr, "This file is improperly formatted\n");
-	}
 }
 
 int getSize(FILE* input) {
@@ -106,4 +109,24 @@ int getSize(FILE* input) {
 	if(fseek(input, pos, SEEK_SET) == -1) return -1;
 
 	return size;
+}
+
+char headCheck(FILE* input) {
+	char type, plc;
+	type = (char) fgetc(input);
+	char check[3];
+	fgetc(input);
+	fgetc(input);
+	while(((char)fgetc(input)) != '\n') {}
+
+	for (int i = 0; i < 4;i++) {
+		check[i] = (char)fgetc(input);
+	}
+
+	if(strcmp(check,"255") < 0) {
+		type = 'n';
+		fprintf(stderr, "Invalid header file\n");
+	}
+
+	return type;
 }
