@@ -4,15 +4,16 @@
 
 int argCheck(char *argv[], FILE* in);
 void buff(FILE* in, char type);
-void write(FILE* out, char outType, int size);
+void write(FILE* out, int outType, int size);
 int getSize(FILE* input);
 char headCheck(FILE* input);
 
 typedef	struct Pixel {
-	unsigned char data[9000];
+	unsigned char r,g,b;
 } Pixel;
 
-Pixel pixBuff;
+Pixel *pixBuff;
+int width,height,color;
 
 int main(int argc, char *argv[]) {
 
@@ -40,7 +41,7 @@ int main(int argc, char *argv[]) {
 
 		FILE* out = fopen(argv[3], "w");
 
-		write(out, type, size);
+		write(out, atoi(argv[1]), size);
 		fclose(out);
 
 		printf("Testing...\n");
@@ -81,15 +82,25 @@ int argCheck(char *argv[], FILE* in) {
 void buff(FILE* in, char type) {
 
 	int size = getSize(in);
+	int count = 0;
+	pixBuff = malloc(sizeof(unsigned char) * width * height);
 
 	if (type == '6') {
-		fread(pixBuff.data, sizeof(char),getSize(in),in);
+		for (int i = 0; i < (size/3); i++) {
+			fread(&pixBuff[count].r, sizeof(unsigned char),1,in);
+			fread(&pixBuff[count].g, sizeof(unsigned char),1,in);
+			fread(&pixBuff[count].b, sizeof(unsigned char),1,in);
+			count++;
+		}
 	}
 
 	else if (type == '3') {
-		int i;
-		for (i = 0; i < size; i++) {
-			pixBuff.data[i] = fgetc(in);
+		int tr,tg,tb;
+		for (int i = 0; i < (width + height); i++) {
+			fscanf(in,"%d%d%d", &tr, &tg,&tb);
+			pixBuff[width * height].r = (char)tr;
+			pixBuff[width * height].g = (char)tg;
+			pixBuff[width * height].b = (char)tb;
 		}
 	}
 
@@ -97,6 +108,7 @@ void buff(FILE* in, char type) {
 		fprintf(stderr, "This is not a valid header file\n");
 	}
 	
+	printf("%d\n", height);
 }
 
 /* This function is a helper function
@@ -124,20 +136,18 @@ char headCheck(FILE* input) {
 	int count = 0;
 	char type;
 	type = (char) fgetc(input);
-	char check[3];
+	char check;
 	fgetc(input);
 
 	while(((char)fgetc(input)) == '#') {
 		while(((char)fgetc(input)) != '\n') {}
 	}
 
-	while(((char)fgetc(input)) != '\n') {}
+	fseek(input, -1, SEEK_CUR);
 
-	for (int i = 0; i < 4;i++) {
-		check[i] = (char)fgetc(input);
-	}
+	fscanf(input, "%d%d%d", &width, &height, &color);
 
-	if(strcmp(check,"255") < 0) {
+	if(color > 255) {
 		type = 'n';
 		fprintf(stderr, "Invalid header file\n");
 	}
@@ -145,17 +155,37 @@ char headCheck(FILE* input) {
 	return type;
 }
 
-void write(FILE* out, char outType, int size) {
+void write(FILE* out, int outType, int size) {
 
-	if (outType == '6') {
-		fprintf(out, "P6\n63 63\n255\n");
-		
-		fwrite(pixBuff.data, sizeof(unsigned char), size, out);
-	
+	if (outType == 6) {
+
+		// This statement will print to the out put file
+		// in binary as well as add a P6 header file
+
+		fprintf(out, "P6\n%d %d\n255", width, height);
+
+		for (int i = 0; i < size/3; i++) {
+			fprintf(out, "%c", pixBuff[i].r);
+			fprintf(out, "%c", pixBuff[i].g);
+			fprintf(out, "%c", pixBuff[i].b);
+		}
+
 	} else {
-		fprintf(out, "P3\n63 63\n255\n");
-		
-		fprintf(out, "%s", pixBuff.data);
+
+		// This statement prints to the output file in ascii format
+		// and will also begin with a P3 header file
+
+		fprintf(out, "P3\n%d %d\n255\n", width, height);
+
+		int count;
+
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				fprintf(out, "%d %d %d\t", pixBuff[count].r, pixBuff[count].g, pixBuff[count].b);
+				count++;
+			}
+			fprintf(out, "\n");
+		}
 	}
 	
 }
